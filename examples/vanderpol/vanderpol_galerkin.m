@@ -30,9 +30,9 @@ xdd = deriv(xd);
 % Define constraints
 % ==================
 Constr = constraint(1,'x',1,'initial')  + ... % Linear Initial
-    constraint(0,'xd',0,'initial') + ... % Linear Initial
-    constraint(1,'-x + xd',1,'final') + ...   % Linear Final
-    constraint(0,'xdd + x - (1-x^2)*xd-u',0,'galerkin');
+         constraint(0,'xd',0,'initial') + ... % Linear Initial
+         constraint(1,'-x + xd',1,'final') + ...   % Linear Final
+         constraint(0,'xdd + x - (1-x^2)*xd-u',0,'galerkin');
 
 
 % Define Cost Function
@@ -73,7 +73,9 @@ snset('Minimize');
 xlow = -Inf*ones(nlp.nIC,1);
 xupp = Inf*ones(nlp.nIC,1);
 tic;
-[x,F,inform] = snopt(init',xlow,xupp,[0;nlp.LinCon.lb;nlp.nlb],[Inf;nlp.LinCon.ub;nlp.nub],'ocp2nlp_cost_and_constraint');
+[x,F,inform] = snopt(init', xlow, xupp, [], [], ...
+                     [0;nlp.LinCon.lb;nlp.nlb], [Inf;nlp.LinCon.ub;nlp.nub], ...
+                     [],[],'ocp2nlp_cost_and_constraint');
 toc;
 F(1)
 sp = getTrajSplines(nlp,x);
