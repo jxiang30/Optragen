@@ -83,7 +83,9 @@ init = [xsp.coefs ysp.coefs]';% + 0.001*rand(nlp.nIC,1);
 %init = zeros(nlp.nIC,1);
 
 tic;
-[x,F,inform] = snopt(init,xlow,xupp,[0;nlp.LinCon.lb;nlp.nlb],[Inf;nlp.LinCon.ub;nlp.nub],[],[],[],[],'ocp2nlp_cost_and_constraint');
+[x,F,inform] = snopt(init, xlow, xupp, [], [], ...
+                     [0;nlp.LinCon.lb;nlp.nlb], [Inf;nlp.LinCon.ub;nlp.nub],...
+                     [], [], 'ocp2nlp_cost_and_constraint');
 toc;
 F(1)
 

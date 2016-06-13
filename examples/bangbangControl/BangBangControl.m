@@ -17,27 +17,28 @@ global nlp
 
 % Create trajectory variables
 % ===========================
-z = traj(2,2,3);
+z  = traj(2,2,3);
 tf = traj(1,0,1);
 
 % Create derivatives of trajectory variables
 % ==========================================
-zd = deriv(z); zdd = deriv(zd);
+zd  = deriv(z); 
+zdd = deriv(zd);
 
 
 % Define constraints
 % ==================
-Constr = constraint(0,'z',0,'initial')  + ... % Linear Initial
-    constraint(1,'z',1,'final') + ...
-    constraint(0,'zd',0,'initial') + ...
-    constraint(0,'zd',0,'final') + ...
-    constraint(0.001,'tf',Inf,'initial') + ...
-    constraint(-1,'zdd/tf^2',1,'trajectory');
+Constr = constraint(0,'z',0,'initial')        + ... % Linear Initial
+         constraint(1,'z',1,'final')          + ...
+         constraint(0,'zd',0,'initial')       + ...
+         constraint(0,'zd',0,'final')         + ...
+         constraint(0.001,'tf',Inf,'initial') + ...
+         constraint(-1,'zdd/tf^2',1,'trajectory');
 
 
 % Define Cost Function
 % ====================
-Cost = cost('tf','final'); % Minimise state and control
+Cost = cost('tf','final');      % Minimise state and control
 
 % Collocation Points, use Chebyshev Gauss Lobatto collocation points.
 % ===================================================================
@@ -73,7 +74,9 @@ snset('Minimize');
 xlow = -Inf*ones(nlp.nIC,1);
 xupp = Inf*ones(nlp.nIC,1);
 tic;
-[x,F,inform] = snopt(init',xlow,xupp,[0;nlp.LinCon.lb;nlp.nlb],[Inf;nlp.LinCon.ub;nlp.nub],'ocp2nlp_cost_and_constraint');
+[x,F,inform] = snopt(init', xlow, xupp, [], [], ...
+                     [0;nlp.LinCon.lb;nlp.nlb], [Inf;nlp.LinCon.ub;nlp.nub], ...
+                     [],[],'ocp2nlp_cost_and_constraint');
 toc;
 F(1)
 sp = getTrajSplines(nlp,x);
