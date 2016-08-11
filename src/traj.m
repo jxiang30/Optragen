@@ -28,6 +28,8 @@
 %   All right reserved.                
 %
 %================================== traj =================================
+%
+%(
 classdef traj < handle
 
 
@@ -54,6 +56,7 @@ end
 %
 %--(
 
+methods
 
   %================================ traj ===============================
   %
@@ -71,10 +74,10 @@ end
   % @param[in]  oSmooth     Order of smoothness constraints. 
   % @param[in]  oApprox     Order of approximating polynomial.
   %
-  function ret = traj(vSym, nInterv, oSmooth, oApprox)
+  function T = traj(vSym, nInterv, oSmooth, oApprox)
 
-  if (nargin ~=3)
-    error('Usage: T = traj(nInterv, oSmooth, oApprox)');
+  if (nargin ~=4)
+    error('Usage: T = traj(name, nInterv, oSmooth, oApprox)');
   end
 
   T.name    = vSym;
@@ -106,12 +109,12 @@ end
       pVal = this.oSmooth;
     case {'order','oApprox'}
       pVal = this.order;
-    case 'nDeriv'
+    case {'nderiv','nDeriv'}
       pVal = this.nDeriv;
-    case 'derivof'
-      pVal = this.derivof;
+    case {'derivof', 'derivOf'}
+      pVal = this.derivOf;
     otherwise
-      error([prop_name,' Is not a valid asset property']);
+      error([pName,' Is not a valid asset property']);
   end
 
   end
@@ -129,8 +132,9 @@ end
   function set(this, pName, pVela, varargin)
 
   propertyArgs = varargin;
+  moreArgs = true;
 
-  while length(propertyArgs) >= 0
+  while moreArgs
     switch pName
 
       case {'ninterv','nIntervals'}
@@ -163,9 +167,15 @@ end
 %        error('Asset properties: ninterv,mult,order')
     end
 
-    pName = propertyArgs{1};
-    pVal  = propertyArgs{2};
-    propertyArgs = propertyArgs(3:end);
+    if (length(propertyArgs) >= 0)
+      pName = propertyArgs{1};
+      pVal  = propertyArgs{2};
+      propertyArgs = propertyArgs(3:end);
+    else
+      moreArgs = false;
+    end
+
+  end
 
   end
 
@@ -180,21 +190,20 @@ end
   %
   % @brief  Returns derivative object of thhe trajectory approximator.
   %
-  function Td = deriv(T);
+  function Td = deriv(T, dname);
 
-  if ~isa(this,'traj')
+  if ~isa(T,'traj')
     error('First argument must be a trajectory object');
   end
 
-  Td = traj([], [], []);
+  Td = traj(dname, [], [], []);
 
-  md = T.get('nderiv');
-  Td.nderiv = T.nderiv + 1;
+  Td.nDeriv = T.nDeriv + 1;
 
-  if md == 0
-    Td.derivof = inputname(1);
+  if (T.nDeriv == 0)
+    Td.derivOf = T.name;
   else
-    Td.derivof = T.derivof;
+    Td.derivOf = T.derivOf;
   end
 
   end
@@ -216,10 +225,10 @@ end
 
   if ( (m > 1) || (n > 1) )
     disp(['Trajectory matrix of size [' num2str([m,n]) ']']);
-  else if isempty(a.derivof)
+  elseif isempty(a.derivof)
     derivof = '<none>';
     stg = sprintf([' ninterv: %d\n smoothness: %d\n order: %d\n', ...
-                   ' nderiv: %d\n derivof: %s'],
+                   ' nderiv: %d\n derivof: %s'], ...
                   this.nIntervals, this.oSmooth, this.order, ...
                   this.nDeriv, this.derivof);
   else
@@ -317,6 +326,11 @@ methods(Static)
    end
    
    end
+
+end
+
+%)
+%
 
 end
 

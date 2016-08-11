@@ -35,95 +35,87 @@ LinCon = getNlpLinearA(nlp,ColMat);
 nlb = [];
 nub = [];
 if nlp.nnlic ~= 0
-    nlb = [nlb;nlp.nlic_lb'];
-    nub = [nub;nlp.nlic_ub'];
+  nlb = [nlb;nlp.nlic_lb'];
+  nub = [nub;nlp.nlic_ub'];
 end
 
 if nlp.nnltc ~= 0
-    v1 = repmat(nlp.nltc_lb,nlp.nbps,1);
-    v2 = repmat(nlp.nltc_ub,nlp.nbps,1);
-    nlb = [nlb;v1(:)];
-    nub = [nub;v2(:)];
+  v1 = repmat(nlp.nltc_lb,nlp.nbps,1);
+  v2 = repmat(nlp.nltc_ub,nlp.nbps,1);
+  nlb = [nlb;v1(:)];
+  nub = [nub;v2(:)];
 end
 
 if nlp.nnlfc ~= 0
-    nlb = [nlb;nlp.nlfc_lb'];
-    nub = [nub;nlp.nlfc_ub'];
+  nlb = [nlb;nlp.nlfc_lb'];
+  nub = [nub;nlp.nlfc_ub'];
 end
 
 
 % Create Cost Functions
 % =====================
-icfCode = createMFunction(OutputSequence,Cost,'initial',probName,ParamList);
-tcfCode = createMFunction(OutputSequence,Cost,'trajectory',probName,ParamList);
-fcfCode = createMFunction(OutputSequence,Cost,'final',probName,ParamList);
+icfCode = genSource.createFunction(OutputSequence,Cost,'initial', ...
+                                                  probName, ParamList);
+tcfCode = genSource.createFunction(OutputSequence,Cost,'trajectory', ...
+                                                  probName, ParamList);
+fcfCode = genSource.createFunction(OutputSequence,Cost,'final', ...
+                                                  probName, ParamList);
 
 % Create Constraint Functions
 % ===========================
-nlicfCode = createMFunction(OutputSequence,Constr,'initial',probName,ParamList);
-nltcfCode = createMFunction(OutputSequence,Constr,'trajectory',probName,ParamList);
-nlfcfCode = createMFunction(OutputSequence,Constr,'final',probName,ParamList);
-nlgcfCode = createMFunction(OutputSequence,Constr,'galerkin',probName,ParamList);
+nlicfCode = genSource.createFunction(OutputSequence,Constr,'initial', ...
+                                                    probName,ParamList);
+nltcfCode = genSource.createFunction(OutputSequence,Constr,'trajectory', ...
+                                                    probName,ParamList);
+nlfcfCode = genSource.createFunction(OutputSequence,Constr,'final', ...
+                                                    probName,ParamList);
+nlgcfCode = genSource.createFunction(OutputSequence,Constr,'galerkin', ...
+                                                    probName,ParamList);
 
 
-% Change to the desired directory
-% ===============================
-old_pwd = pwd; % Save the present working directory.
-if ~ischar(pathName)
-    error([pathName,'is not a character string']);
-end
-
-% Write MATLAB files for costs
+% Write functions for costs
 % =============================
-writeMFunction([probName '_icf.m'],icfCode);
-writeMFunction([probName '_tcf.m'],tcfCode)
-writeMFunction([probName '_fcf.m'],fcfCode)
+fPtr = genSource.createHeader(probName, pathName);
+genSource.writeFunction(fPtr, 'icf', icfCode);
+genSource.writeFunction(fPtr, 'tcf', tcfCode);
+genSource.writeFunction(fPtr, 'fcf', fcfCode);
 
-% Write MATLAB files for nonlinear constraints
+% Write functions to nonlinear constraints
 % =============================================
-writeMFunction([probName '_nlicf.m'],nlicfCode);
-writeMFunction([probName '_nltcf.m'],nltcfCode);
-writeMFunction([probName '_nlfcf.m'],nlfcfCode);
-writeMFunction([probName '_nlgcf.m'],nlgcfCode);
+genSource.writeFunction(fPtr, 'nlicf', nlicfCode);
+genSource.writeFunction(fPtr, 'nltcf', nltcfCode);
+genSource.writeFunction(fPtr, 'nlfcf', nlfcfCode);
+genSource.writeFunction(fPtr, 'nlgcf', nlgcfCode);
 
-% Change back to the old directory
-% ================================
-try
-    cd(old_pwd);
-catch
-    error('Cannot change to directory %s',pathName);
-end
-
+genSource.createFooter(fPtr);
 
 % Create nlp data structure
 % =========================
 nlp.OutputSequence = OutputSequence;
 
 for i=1:nlp.nbps
-    M = [];
-    for j=1:nlp.nout
-        ncoef = size(ColMat(j).Data,3);
-        tmpMat = reshape(ColMat(j).Data(:,i,:),nlp.maxderiv(j),ncoef);
-        M = diagonalise(M,tmpMat);
-    end
-    B(:,:,i) = M;
+  M = [];
+  for j=1:nlp.nout
+    ncoef = size(ColMat(j).Data,3);
+    tmpMat = reshape(ColMat(j).Data(:,i,:),nlp.maxderiv(j),ncoef);
+    M = diagonalise(M,tmpMat);
+  end
+  B(:,:,i) = M;
 end
 
 nlp.B = B;
 nlp.probName = probName;
+nlp.probFuncs = feval(probName);
 nlp.LinCon = LinCon;
 
 % Get basis functions for Galerkin Projection
 % ===========================================
 if nlp.nnlgc ~= 0
-    nlp.BasisFcn = getBspBasisFcn(nlp.ninterv,nlp.order,nlp.smoothness,HL);
-    nBasis = size(nlp.BasisFcn,2);
-    nlb = [nlb;zeros(nBasis*nlp.nnlgc,1)];
-    nub = [nub;zeros(nBasis*nlp.nnlgc,1)];
+  nlp.BasisFcn = getBspBasisFcn(nlp.ninterv,nlp.order,nlp.smoothness,HL);
+  nBasis = size(nlp.BasisFcn,2);
+  nlb = [nlb;zeros(nBasis*nlp.nnlgc,1)];
+  nub = [nub;zeros(nBasis*nlp.nnlgc,1)];
 end
 nlp.nlb = nlb;
 nlp.nub = nub;
-
-
-
 
