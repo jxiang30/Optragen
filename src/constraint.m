@@ -279,6 +279,29 @@ methods(Static)
   %TODO: Need to figure out how to remove that aspect.
   end
 
+  function oc = obsSquareApprox(xSym, xCent, rad, order)
+  nLpStr = [];
+
+  order = round(order);         % Force to be natural.
+  if (mod(order,2) == 1)        % Force to be even.
+    order = order + 1;
+  end
+  oStr = num2str(order);
+
+  for ii = 1:length(xSym)
+    nLpStr = [nLpStr , ['( (' xSym{ii} '- (' num2str(xCent(ii)) ') )/' ...
+              '(' num2str(rad) ') )^' oStr] ];
+    if (ii < length(xSym))
+      nLpStr = [nLpStr  ' + '];
+    end
+  end
+  oc = constraint(1, nLpStr, Inf, 'trajectory');
+
+  %TODO: Not stand alone. Relies on pre-existing definitions to compute
+  %TODO:   gradient.  How constraints concatenated is important.
+  %TODO: Need to figure out how to remove that aspect.
+  end
+
 end
 
 %--)
