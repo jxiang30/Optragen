@@ -14,6 +14,3 @@ for i=1:len
    %grad(i) = {char(maple('diff',func,var))}; % with Maple toolbox
    grad(i) = {char(diff(sym(func),var))}; % with Matlab symbolic toolbox
 end
-
-
-    
