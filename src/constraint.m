@@ -27,21 +27,22 @@
 %   All right reserved.                
 %
 %=============================== constraint ==============================
-classdef constraint < handle
+%
+%(
+classdef constraint < ocpSpec
 
 %============================ Member Variables ===========================
 %
-
+%--(
 properties
-  func;                 %! Structure containing constraint information.
   type;                 %! Type of constraint.
 end
 
-%)
+%--)
 %
 %============================= Public Methods ============================
 %
-%(
+%--(
 
 methods
 
@@ -51,13 +52,15 @@ methods
   %
   % This function defines the initial cost function
   % func definition can be either
-  %           a) Character string containing the function
-  %           b) mFunction object
-  %           c) cFunction object
+  %           a. Character string containing the function
+  %           b. mFunction object
+  %           c. cFunction object
   %
   %TODO: Should move different types to their own classes?
   %
   function this = constraint(lb,func,ub,type)
+
+  this@ocpSpec();
 
   %================== Error Checking for Input Data ==================
   if nargin~=4
@@ -88,11 +91,11 @@ methods
   this.type = lower(type); 
 
   if isa(func,'char')
-    constr = this.constraint_char(lb,func,ub);
+    constr = this.charSpec(lb,func,ub);
   elseif isa(func,'mFunction')
-    constr = this.constraint_mFunction(lb,func,ub);
+    constr = this.mFunction(lb,func,ub);
   elseif isa(func,'cFunction')
-    constr = this.constraint_cFunction(lb,func,ub);
+    constr = this.cFunction(lb,func,ub);
   else
     error('Illegal data type in first argument.');
   end
@@ -156,22 +159,21 @@ methods
 
 end
 
-%)
+%--)
 %
 %=========================== Protected Methods ===========================
 %
-%(
+%--(
 
 methods(Access = protected)
 
-
-  %======================== constraint_cFunction =======================
+  %============================= cFunction =============================
   %
   % @brief  Defines constraint function, defined as a character array.
   %
   %TODO: Above description might be wrong.
   %
-  function constr = constraint_cFunction(this, lb,func,ub)
+  function constr = cFunction(this, lb,func,ub)
 
   % Get all the trajectories from the workspace
 
@@ -192,12 +194,25 @@ methods(Access = protected)
 
   end
 
+  %============================= mFunction =============================
+  %
+  % @brief  Defines constraint function as an m-function.
+  %
+  %
+  function constr = mFunction(this, lb, func, ub)
 
-  %========================== constraint_char ==========================
+  %TODO:  I THINK THAT CFUNCTION AND MFUNCTION GOT FLIPPED!!
+  %TODO:  Need to move cFunction stuff to here and code new c-function
+  %TODO:    interface.  Could c-function refer to mex functions?
+
+  end
+
+
+  %============================== charSpec =============================
   %
   % @brief  Defines constraint function, defined as a character array.
   %
-  function constr = constraint_char(this, lb,func,ub)
+  function constr = charSpec(this, lb,func,ub)
   
   % Get all the trajectories from the workspace
   
@@ -229,8 +244,47 @@ methods(Access = protected)
 
 end
 
-%)
+%--)
 %
-%=========================================================================
+%=========================== Protected Methods ===========================
+%
+%--(
+
+methods(Static)
+
+  function ic = initialCondition(vSym, vVal)
+  ic = constraint(vVal, vSym, vVal, 'initial');
+  end
+
+  function ic = finalCondition(vSym, vVal)
+  ic = constraint(vVal, vSym, vVal, 'final');
+  end
+
+  function lc = limits(vSym, bLimits)
+  lc = constraint(bLimits(1), vSym, bLimits(2), 'trajectory');
+  end
+
+  function oc = obsCircle(xSym, xCent, rad)
+  nSqStr = [];
+  for ii = 1:length(xSym)
+    nSqStr = [nSqStr , ['(' xSym{ii} '- (' num2str(xCent(ii)) ') )^2'] ];
+    if (ii < length(xSym))
+      nSqStr = [nSqStr  ' + '];
+    end
+  end
+  oc = constraint(rad^2 , nSqStr, Inf, 'trajectory');
+
+  %TODO: Not stand alone. Relies on pre-existing definitions to compute
+  %TODO:   gradient.  How constraints concatenated is important.
+  %TODO: Need to figure out how to remove that aspect.
+  end
 
 end
+
+%--)
+%
+
+end
+%)
+%
+%=============================== constraint ==============================

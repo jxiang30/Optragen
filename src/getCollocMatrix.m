@@ -22,6 +22,6 @@ for i=1:optparam.nout
     augbps = sort(reshape(augbps,v1*v2,1));
     Mat = spcol(augknots,optparam.order(i),augbps);
     Mat = reshape(Mat,optparam.maxderiv(i),optparam.nbps,ncoef);    
-    ColMat(:,:,i).Data = Mat;
+    ColMat(i).Data = Mat;
 end
 

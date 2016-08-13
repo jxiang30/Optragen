@@ -9,13 +9,12 @@
 
 function [nlp] = ocp2nlp(TrajList, Cost,Constr,HL, ParamList,pathName,probName)
 
-clc;
-ban1 = sprintf('\t\t\t\t OPTRAGEN ver 2.0\n\t\t\t\t Copyright (c) by Raktim Bhattacharya (raktim@aero.tamu.edu)');
-ban2 = sprintf('\t\t\t\t Department of Aerospace Engineering\n\t\t\t\t Texas A&M University. \n\t\t\t\t All rights reserved');
-ban3 = sprintf('\t\t\t\t ====================================');
-ban = sprintf('%s\n%s\n%s\n\n',ban1,ban2,ban3);
-
-disp(ban);
+%ban1 = sprintf('\t\t\t\t OPTRAGEN ver 2.0\n\t\t\t\t Copyright (c) by Raktim Bhattacharya (raktim@aero.tamu.edu)');
+%ban2 = sprintf('\t\t\t\t Department of Aerospace Engineering\n\t\t\t\t Texas A&M University. \n\t\t\t\t All rights reserved');
+%ban3 = sprintf('\t\t\t\t ====================================');
+%ban = sprintf('%s\n%s\n%s\n\n',ban1,ban2,ban3);
+%
+%disp(ban);
 
 % Get Optimisation parameters
 % ============================
