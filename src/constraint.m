@@ -64,7 +64,7 @@ methods
 
   %================== Error Checking for Input Data ==================
   if nargin~=5
-    error('Usage: constrObj = constraint(lb,func,ub,type);');
+    error('Usage: constrObj = constraint(lb,func,ub,type, xVars);');
   end
 
   if ~isa(lb,'numeric')
@@ -253,15 +253,15 @@ end
 methods(Static)
 
   function ic = initialCondition(vSym, vVal)
-  ic = constraint(vVal, vSym, vVal, 'initial');
+  ic = constraint(vVal, vSym, vVal, 'initial', vSym);
   end
 
   function ic = finalCondition(vSym, vVal)
-  ic = constraint(vVal, vSym, vVal, 'final');
+  ic = constraint(vVal, vSym, vVal, 'final', vSym);
   end
 
   function lc = limits(vSym, bLimits)
-  lc = constraint(bLimits(1), vSym, bLimits(2), 'trajectory');
+  lc = constraint(bLimits(1), vSym, bLimits(2), 'trajectory', vSym);
   end
 
   function oc = obsCircle(xSym, xCent, rad)
@@ -272,7 +272,7 @@ methods(Static)
       nSqStr = [nSqStr  ' + '];
     end
   end
-  oc = constraint(rad^2 , nSqStr, Inf, 'trajectory');
+  oc = constraint(rad^2 , nSqStr, Inf, 'trajectory', xSym);
 
   %TODO: Not stand alone. Relies on pre-existing definitions to compute
   %TODO:   gradient.  How constraints concatenated is important.
@@ -295,7 +295,7 @@ methods(Static)
       nLpStr = [nLpStr  ' + '];
     end
   end
-  oc = constraint(1, nLpStr, Inf, 'trajectory');
+  oc = constraint(1, nLpStr, Inf, 'trajectory', xSym);
 
   %TODO: Not stand alone. Relies on pre-existing definitions to compute
   %TODO:   gradient.  How constraints concatenated is important.
