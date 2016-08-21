@@ -58,12 +58,12 @@ methods
   %
   %TODO: Should move different types to their own classes?
   %
-  function this = constraint(lb,func,ub,type)
+  function this = constraint(lb,func,ub,type, xVars)
 
   this@ocpSpec();
 
   %================== Error Checking for Input Data ==================
-  if nargin~=4
+  if nargin~=5
     error('Usage: constrObj = constraint(lb,func,ub,type);');
   end
 
@@ -91,7 +91,7 @@ methods
   this.type = lower(type); 
 
   if isa(func,'char')
-    constr = this.charSpec(lb,func,ub);
+    constr = this.charSpec(lb,func,ub, xVars);
   elseif isa(func,'mFunction')
     constr = this.mFunction(lb,func,ub);
   elseif isa(func,'cFunction')
@@ -172,6 +172,8 @@ methods(Access = protected)
   % @brief  Defines constraint function, defined as a character array.
   %
   %TODO: Above description might be wrong.
+  %TODO: Don't really understand what code does. As in, what is
+  %TODO:   get(func, 'varList') doing?
   %
   function constr = cFunction(this, lb,func,ub)
 
@@ -212,7 +214,7 @@ methods(Access = protected)
   %
   % @brief  Defines constraint function, defined as a character array.
   %
-  function constr = charSpec(this, lb,func,ub)
+  function constr = charSpec(this, lb, func, ub, Tnames)
   
   % Get all the trajectories from the workspace
   
@@ -221,8 +223,6 @@ methods(Access = protected)
   end
   
   varnames = symvar(func);
-  
-  Tnames = getWorkSpaceTrajNames;
   
   fvars = [];
   for i=1:length(varnames)
