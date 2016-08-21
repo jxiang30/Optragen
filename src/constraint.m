@@ -246,24 +246,53 @@ end
 
 %--)
 %
-%=========================== Protected Methods ===========================
+%============================= Static Methods ============================
 %
 %--(
 
 methods(Static)
 
+  %========================== initialCondition =========================
+  %
+  % @brief  Specify initial condition constraints.
+  %
+  % @param[in]  vSym    Symbolic string of variable.
+  % @param[in]  vVal    Numerical value of initial condition.
+  %
   function ic = initialCondition(vSym, vVal)
   ic = constraint(vVal, vSym, vVal, 'initial', vSym);
   end
 
+  %=========================== finalCondition ==========================
+  %
+  % @brief  Specify final condition constraints.
+  %
+  % @param[in]  vSym    Symbolic string of variable.
+  % @param[in]  vVal    Numerical value of initial condition.
+  %
   function ic = finalCondition(vSym, vVal)
   ic = constraint(vVal, vSym, vVal, 'final', vSym);
   end
 
+  %=============================== limits ==============================
+  %
+  % @brief  Specify known limits on optimization variables.
+  %
+  % @param[in]  vSym    Symbolic variable to limit/constraint.
+  % @param[in]  bLims   Scalar or 2-vector specifying lower/upper limits.
+  %
   function lc = limits(vSym, bLimits)
   lc = constraint(bLimits(1), vSym, bLimits(2), 'trajectory', vSym);
   end
 
+  %============================= obsCircle =============================
+  %
+  % @brief  Create a circular (obstacle) constraint.
+  %
+  % @param[in]  xSym    Symbolic description of state vector.
+  % @param[in]  xCent   Center of circle (same dimensions as xSym).
+  % @param[in]  rad     Radius constraint (must be greater than).
+  %
   function oc = obsCircle(xSym, xCent, rad)
   nSqStr = [];
   for ii = 1:length(xSym)
@@ -274,11 +303,17 @@ methods(Static)
   end
   oc = constraint(rad^2 , nSqStr, Inf, 'trajectory', xSym);
 
-  %TODO: Not stand alone. Relies on pre-existing definitions to compute
-  %TODO:   gradient.  How constraints concatenated is important.
-  %TODO: Need to figure out how to remove that aspect.
   end
 
+  %========================== obsSquareApprox ==========================
+  %
+  % @brief  Create an approximately square obstacle constraint.
+  %
+  % @param[in]  xSym    Symbolic description of state vector.
+  % @param[in]  xCent   Center of square/rectangular object.
+  % @param[in]  rad     Radius constraint (scalar or 2-vector).
+  % @param[in]  order   Order of Lp constraint approximating the sqyare.
+  %
   function oc = obsSquareApprox(xSym, xCent, rad, order)
   nLpStr = [];
 
@@ -297,9 +332,6 @@ methods(Static)
   end
   oc = constraint(1, nLpStr, Inf, 'trajectory', xSym);
 
-  %TODO: Not stand alone. Relies on pre-existing definitions to compute
-  %TODO:   gradient.  How constraints concatenated is important.
-  %TODO: Need to figure out how to remove that aspect.
   end
 
 end

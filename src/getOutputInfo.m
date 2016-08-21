@@ -44,19 +44,3 @@ for i=1:len
         ret(trajIndex).derivName{nderiv} = TrajList(i).varname;
     end
 end
-        
-        
-        
-
-        
-
-
-
-
-
-
-
-
-        
-        
-        
