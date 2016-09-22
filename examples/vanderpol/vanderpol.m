@@ -19,19 +19,20 @@ global nlp
 
 % Create trajectory variables
 % ===========================
-z = traj(1,4,5);
+z = traj('z',1,4,5);
 
 
 % Create derivatives of trajectory variables
 % ==========================================
-zd = deriv(z); zdd = deriv(zd);
+zd = deriv(z,'zd'); zdd = deriv(zd, 'zdd');
 
+xVars = {'z'; 'zd'; 'zdd'};
 
 % Define constraints
 % ==================
-Constr = constraint(1,'z',1,'initial')  + ... % Linear Initial
-    constraint(0,'zd',0,'initial') + ... % Linear Initial
-    constraint(1,'-z + zd',1,'final');   % Linear Final
+Constr = constraint(1,'z',1,'initial', xVars)  + ... % Linear Initial
+    constraint(0,'zd',0,'initial', xVars) + ... % Linear Initial
+    constraint(1,'-z + zd',1,'final', xVars);   % Linear Final
 
 
 % Define Cost Function
@@ -57,7 +58,7 @@ probName = 'vanSim';
 
 % List of trajectories used in the problem
 % ========================================
-TrajList = trajList(z,zd,zdd);
+TrajList = traj.trajList(z,zd,zdd);
 
 % =========================================================================
 % ParamList contains information about constants that might be used in the
@@ -72,9 +73,10 @@ snset('Minimize');
 xlow = -Inf*ones(nlp.nIC,1);
 xupp = Inf*ones(nlp.nIC,1);
 tic;
+ghSnopt = snoptFunction(nlp);
 [x,F,inform] = snopt(init', xlow, xupp, [], [], ...
                      [0;nlp.LinCon.lb;nlp.nlb], [Inf;nlp.LinCon.ub;nlp.nub], ...
-                     [], [], 'ocp2nlp_cost_and_constraint');
+                     [], [], ghSnopt);
 toc;
 F(1)
 sp = getTrajSplines(nlp,x);
