@@ -12,8 +12,14 @@
 %   All right reserved.
 % =======================================================================
 clear all;
-
 global nlp
+
+addpath('../../');
+addpath('../../src');
+SNOPTPATH = '../../../../snopt';
+addpath([ SNOPTPATH ]);
+addpath([ SNOPTPATH '/matlab/matlab/' ]);
+addpath([ SNOPTPATH '/matlab/mex/' ]);
 
 %nlpp('clear');
 

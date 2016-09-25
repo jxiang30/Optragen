@@ -9,6 +9,13 @@
 clear all;
 global nlp;
 
+addpath('../../');
+addpath('../../src');
+SNOPTPATH = '../../../../snopt';
+addpath([ SNOPTPATH ]);
+addpath([ SNOPTPATH '/matlab/matlab/' ]);
+addpath([ SNOPTPATH '/matlab/mex/' ]);
+
 ninterv = 2;
 hl = 1.0;
 
@@ -19,24 +26,25 @@ eps = 0.0001;
 
 % Create trajectory variables
 % ===========================
-x = traj(ninterv,2,3); % Arguments are ninterv, smoothness, order
-y = traj(ninterv,2,3);
+x = traj('x', ninterv,2,3); % Arguments are ninterv, smoothness, order
+y = traj('y', ninterv,2,3);
 
 % Create derivatives of trajectory variables
 % ==========================================
-xd = deriv(x);
-yd = deriv(y);
+xd = deriv(x, 'xd');
+yd = deriv(y, 'yd');
 
 ParamList = [];
+xVars = {'x'; 'y'; 'xd'; 'yd'};
 
 % Define constraints
 % ==================
-Constr = constraint(x0,'x',x0,'initial') + ... % x(0)
-    constraint(y0,'y',y0,'initial') + ... % y(0)
-    constraint(xf,'x',xf,'final') + ...     % x(1) = 1,  Final position, time is normalised
-    constraint(yf,'y',yf,'final') + ...     % y(1) = 1
-    constraint(0.1,'(x-0.4)^2 + (y-0.5)^2',Inf,'trajectory') + ... % Dynamics as a path constraint
-    constraint(0.1,'(x-0.8)^2 + (y-1.5)^2',Inf,'trajectory');
+Constr = constraint(x0,'x',x0,'initial', xVars) + ... % x(0)
+    constraint(y0,'y',y0,'initial', xVars) + ... % y(0)
+    constraint(xf,'x',xf,'final', xVars) + ...     % x(1) = 1,  Final position, time is normalised
+    constraint(yf,'y',yf,'final', xVars) + ...     % y(1) = 1
+    constraint(0.1,'(x-0.4)^2 + (y-0.5)^2',Inf,'trajectory', xVars) + ... % Dynamics as a path constraint
+    constraint(0.1,'(x-0.8)^2 + (y-1.5)^2',Inf,'trajectory', xVars);
 % Define Cost Function
 % ====================
 Cost = cost('xd^2+yd^2','trajectory'); % Minimise energy
@@ -64,7 +72,7 @@ probName = 'obstacle_avoidance';
 
 % List of trajectories used in the problem
 % ========================================
-TrajList = trajList(x,xd,y,yd);
+TrajList = traj.trajList(x,xd,y,yd);
 
 nlp = ocp2nlp(TrajList, Cost,Constr, HL, ParamList,pathName,probName);
 snset('Minimize');
@@ -82,10 +90,11 @@ ysp = createGuess(y,Time,yval);
 init = [xsp.coefs ysp.coefs]';% + 0.001*rand(nlp.nIC,1);
 %init = zeros(nlp.nIC,1);
 
+ghSnopt = snoptFunction(nlp);
 tic;
 [x,F,inform] = snopt(init, xlow, xupp, [], [], ...
                      [0;nlp.LinCon.lb;nlp.nlb], [Inf;nlp.LinCon.ub;nlp.nub],...
-                     [], [], 'ocp2nlp_cost_and_constraint');
+                     [], [], ghSnopt);
 toc;
 F(1)
 
@@ -103,8 +112,8 @@ Y = fnval(ySP,refinedTimeGrid);
 Yd = fnval(fnder(ySP),refinedTimeGrid);
 
 figure(1);
-plot(X,Y);hold on;
-th = [0:0.1:2*pi];
+plot(X,Y,'b');hold on;
+th = [0:0.1:2*pi+0.1];
 x = 0.4 + sqrt(.1)*cos(th);
 y = 0.5 + sqrt(.1)*sin(th);
 x1 = 0.8 + sqrt(.1)*cos(th);
