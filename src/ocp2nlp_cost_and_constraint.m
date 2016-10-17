@@ -32,14 +32,14 @@ if nlp.nicf ~= 0 % Costs
     fcn = ['[f,df] = ' nlp.probName '_icf(' argList ');'];
     eval(fcn);
     IObj = f;
-    IObjGrad = df'*squeeze(nlp.B(:,:,1));
+    IObjGrad = (df')*squeeze(nlp.B(:,:,1));
 end
 
 if nlp.nnlic ~= 0 % Constraints
     fcn = ['[f,df] = ' nlp.probName '_nlicf(' argList ');'];
     eval(fcn);
     InlConstr = f;
-    InlConstrGrad = df*squeeze(nlp.B(:,:,1));
+    InlConstrGrad = (df')*squeeze(nlp.B(:,:,1));
 end
 
 %% Integral Cost & Path Constraint Functions
