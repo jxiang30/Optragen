@@ -72,7 +72,7 @@ df = [];
       fcn = ['[f,df] = nlp.probFuncs.nlicf(' argList ');'];
       eval(fcn);
       InlConstr = f;
-      InlConstrGrad = df*squeeze(nlp.B(:,:,1));
+      InlConstrGrad = transpose(df)*squeeze(nlp.B(:,:,1));
   end
   
   %% Integral Cost & Path Constraint Functions
